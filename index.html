@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Vivid Seats Events</title>
+    <script>document.write('<base href="' + document.location + '" />');</script>
+    <link rel="stylesheet" href="style.css" />
+
+    <!-- jQuery goodies -->
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/themes/smoothness/jquery-ui.css" />
+    <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.1/jquery-ui.min.js"></script>
+
+    <!-- Angular app dependencies -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.23/angular.min.js"></script>
+    <script src="event-service.js"></script>
+    <script src="controller.js" type="text/javascript"></script>
+    <!-- Underscore for manual Angular controller scope models -->
+    <script src = "http://underscorejs.org/underscore.js" type = "text/javascript"></script>
+    <!-- Bootstrappy makes me happy -->
+    <script src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.4.0.js"></script>
+    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+    <script type="text/javascript" src="http://momentjs.com/downloads/moment.min.js"></script>
+    <!-- TODO: Use Eonasdan's styling for the timepicker to make date and time picking an angular directive and to make it look prettier-->
+    <script type="text/javascript" src="https://rawgit.com/Eonasdan/bootstrap-datetimepicker/master/src/js/bootstrap-datetimepicker.js"></script>
+
+    <!-- Trent Richardson's easy to use and integrate with Angular timepicker widget from trentrichardson.com -->
+    <script src = "jquery-ui-timepicker-addon.js"></script>
+    <!-- For iso -> readable date formatting -->
+    <script type="text/javascript" src="http://www.datejs.com/build/date.js"></script>
+
+    <link rel="stylesheet" type="text/css" media="screen" href="https://rawgit.com/Eonasdan/bootstrap-datetimepicker/master/build/css/bootstrap-datetimepicker.min.css" />
+</head>
+
+<body ng-app='vivid_seats_homework'>
+
+
+<div id='mainView' ng-controller='controller'>
+
+    <!-- tabs at the top as defined in controller.js -->
+    <ul>
+        <li ng-repeat="tab in tabs"
+            ng-class="{active:isActiveTab(tab.url)}"
+            ng-click="onClickTab(tab)">{{tab.title}}</li>
+    </ul>
+
+    <!-- Dynamic table list of events per category -->
+    <table>
+        <tr>
+            <th>Event Name</th>
+            <th>Date</th>
+            <th>Venue</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Action</th>
+        </tr>
+        <!-- The main content of the table contains rows with a set of hidden cells and a set of visible cells
+            When a row is toggled to edit, the input cells are visible.
+            Otherwise the default view is just text representations of the appropriate field for the particular event -->
+        <!-- Repeat rows for every event returned from event-services All call. -->
+        <tr  ng-repeat="event in events">
+            <!-- This is a tabular cell textually representing event name that is visible by default. -->
+            <td ng-hide="editorEnabled">{{event.name}}</td>
+            <!-- This is a tabular cell that replaces the one above when the edit button is clicked. -->
+            <td ng-show="editorEnabled"><input ng-model = "event.name"></td>
+            <!-- The above pattern is repeated throughout all the fields of the table, for each value of the event -->
+            <td ng-hide="editorEnabled">{{event.date  | date:"MMM dd ha"}}</td>
+            <td ng-show="editorEnabled">
+                <!-- This is the input container for the datepicker.
+                    See controller.js declaration of the datepicker to see manual angular model binding. -->
+                <input type="text" datepickerng class = 'calendar' ng-model = 'event.event_date' id = '{{event.id}}'/>
+                <!-- This is the input container for the time picker.
+                    This is using
+                    See controller.js declaration of the datepicker to see manual angular model binding. -->
+                <input type = "text" id = "{{event.id}}" class = "timepicker" ng-model = "event.time"/>
+            </td>
+            <td ng-hide="editorEnabled">{{event.venue.name}}</td>
+            <td ng-show="editorEnabled"><input ng-model = "event.venue.name"></td>
+
+            <td ng-hide="editorEnabled">{{event.venue.city}}</td>
+            <td ng-show="editorEnabled"><input ng-model = "event.venue.city"></td>
+
+            <td ng-hide="editorEnabled">{{event.venue.state}}</td>
+            <td ng-show="editorEnabled"><input ng-model = "event.venue.state"></td>
+
+            <!-- Save / Cancel button shown when form is editable -->
+            <td ng-show="editorEnabled">
+                <a ng-click= "editorEnabled=!editorEnabled;saveEvent(event)" href = "#">save</a>
+                <a ng-click= "editorEnabled=!editorEnabled;" href = "#">cancel</a>
+            </td>
+            <!-- Edit / Remove buttons shown when list item is not in editable mode.
+                Edit button toggles editorEnabled which makes inputs in/visible -->
+            <td ng-hide="editorEnabled">
+                <a ng-click="editorEnabled=!editorEnabled" href = "#">edit</a> / <a ng-click="removeEvent(event)" href = "#">remove</a>
+            </td>
+        </tr>
+        <!-- Add new event form is hidden until Add New button is clicked -->
+        <tr class = "new_form">
+            <td ng-show="addEventEnabled"><input ng-model = "event.name"></td>
+            <td ng-show="addEventEnabled"><datepicker ng-model = "event.date"></td>
+            <td ng-show="addEventEnabled"><input ng-model = "event.venue.name"></td>
+            <td ng-show="addEventEnabled"><input ng-model = "event.venue.city"></td>
+            <td ng-show="addEventEnabled"><input ng-model = "event.venue.state"></td>
+            <td ng-show="addEventEnabled">
+                <!-- Save button with all the functionality and form clearing built in -->
+                <a onclick = "$('.add_btn').prop('disabled',false);$('.new_form input').val('');" ng-click="addEvent(event);addEventEnabled=!addEventEnabled" href = "#">Save</a>
+                <!-- Cancel button resets the add new event form and hides it -->
+                <a onclick = "$('.add_btn').prop('disabled',false);$('.new_form input').val('');" ng-click="addEventEnabled=!addEventEnabled" href = "#">Cancel</a></td></tr>
+    </table>
+
+    <!-- Add new button -->
+    <button class="add_btn" onclick = '$(this).attr("disabled","true");' ng-click='addEventEnabled=true;'>Add Event</button>
+
+
+</div>
+
+
+
+
+
+</body>
+
+</html>
