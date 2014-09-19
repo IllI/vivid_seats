@@ -142,7 +142,8 @@ app.controller("controller", function($scope){
     //Add event is called from new event create event button
     //calls eventServices add function
     $scope.addEvent = function(event){
-        console.log(event);
+
+            event.date = newDate;
             VividSeats.eventService.add(event,
 
                 function(stuff) {
@@ -200,6 +201,7 @@ app.controller("controller", function($scope){
         }
     }
 
+    var newDate = "";
     function initDateTimeFields(){
         //TODO: Make directives for date/time pickers
 
@@ -212,8 +214,14 @@ app.controller("controller", function($scope){
                 var myEvent = _.filter($scope['events'],function(event){
                     return event['id'] == el.id;
                 })[0];
-                //set modle date to ISO format
-                myEvent.date = el.currentYear+"-"+ (el.currentMonth > 9 ? "" + el.currentMonth: "0" + el.currentMonth) + "-" +  (el.currentDay > 9 ? el.currentDay: "0" + el.currentDay) +myEvent.date.substring(myEvent.date.indexOf("T"))
+                //if event already exists, set modle date to ISO format
+                try{
+                    myEvent.date = el.currentYear+"-"+ (el.currentMonth > 9 ? "" + el.currentMonth: "0" + el.currentMonth) + "-" +  (el.currentDay > 9 ? el.currentDay: "0" + el.currentDay) +myEvent.date.substring(myEvent.date.indexOf("T"))
+                }
+                //otherwise update newDate;
+                catch(e){
+                    newDate =  el.currentYear+"-"+ (el.currentMonth > 9 ? "" + el.currentMonth: "0" + el.currentMonth) + "-" +  (el.currentDay > 9 ? el.currentDay: "0" + el.currentDay) +newDate.substring(newDate.indexOf("T"));
+                }
 
             }
         });
@@ -228,9 +236,26 @@ app.controller("controller", function($scope){
                     //$input.context is the actual input field in the el DOM object
                     return event['id'] == el.$input.context.id;
                 })[0];
+                //try to edit existing event
+                try{
+                    var date = myEvent.date.substring(0,myEvent.date.indexOf("T")) + "T" + el.hour + ":" + el.minute;
+                    myEvent.date = date;
+                }
+                //set newDate to date value
+                catch(e){
+                    var d = $("#new_form .calendar").val();
+                    d = d.split('/');
+                    console.log(d)
+                    if (d.length > 0){
+                        d = d[2]+'-'+d[0] +'-'+d[1];
+                        newDate = d;
 
-                var date = myEvent.date.substring(0,myEvent.date.indexOf("T")) + "T" + el.hour + ":" + el.minute;
-                myEvent.date = date;
+                    }
+                    if ((""+el.minute).length < 2) el.minute = "0"+el.minute;
+                    newDate+="T"+ el.hour + ":" + el.minute;
+
+
+                }
 
             }
         });

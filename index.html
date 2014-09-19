@@ -96,17 +96,19 @@
             </td>
         </tr>
         <!-- Add new event form is hidden until Add New button is clicked -->
-        <tr class = "new_form">
+        <tr id = "new_form">
             <td ng-show="addEventEnabled"><input ng-model = "event.name"></td>
-            <td ng-show="addEventEnabled"><datepicker ng-model = "event.date"></td>
+            <td ng-show="addEventEnabled">
+                <input type="text" datepickerng class = 'calendar' ng-model = 'event.event_date' id = '{{event.id}}'/>
+                <input type = "text" id = "{{event.id}}" class = "timepicker" ng-model = "event.time"/>
             <td ng-show="addEventEnabled"><input ng-model = "event.venue.name"></td>
             <td ng-show="addEventEnabled"><input ng-model = "event.venue.city"></td>
             <td ng-show="addEventEnabled"><input ng-model = "event.venue.state"></td>
             <td ng-show="addEventEnabled">
                 <!-- Save button with all the functionality and form clearing built in -->
-                <a onclick = "$('.add_btn').prop('disabled',false);$('.new_form input').val('');" ng-click="addEvent(event);addEventEnabled=!addEventEnabled" href = "#">Save</a>
+                <a onclick = "$('.add_btn').prop('disabled',false);$('.new_form input').val('');newDate='';" ng-click="addEvent(event);addEventEnabled=!addEventEnabled" href = "#">Save</a>
                 <!-- Cancel button resets the add new event form and hides it -->
-                <a onclick = "$('.add_btn').prop('disabled',false);$('.new_form input').val('');" ng-click="addEventEnabled=!addEventEnabled" href = "#">Cancel</a></td></tr>
+                <a onclick = "$('.add_btn').prop('disabled',false);$('.new_form input').val('');newDate='';" ng-click="addEventEnabled=!addEventEnabled" href = "#">Cancel</a></td></tr>
     </table>
 
     <!-- Add new button -->
